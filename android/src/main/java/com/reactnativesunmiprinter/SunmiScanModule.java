@@ -6,8 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Build;
 import android.util.Log;
-import androidx.core.content.ContextCompat;
 
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.BaseActivityEventListener;
@@ -96,7 +96,12 @@ public class SunmiScanModule extends ReactContextBaseJavaModule {
   private void registerReceiver() {
     IntentFilter filter = new IntentFilter();
     filter.addAction(ACTION_DATA_CODE_RECEIVED);
-    ContextCompat.registerReceiver(reactContext, receiver, filter, Context.RECEIVER_EXPORTED);
+    // Update for android 14
+    if (Build.VERSION.SDK_INT >= 34 && reactContext.getApplicationInfo().targetSdkVersion >= 34) {
+      reactContext.registerReceiver(receiver, filter, reactContext.RECEIVER_EXPORTED);
+    }else{
+      reactContext.registerReceiver(receiver, filter);
+    }
   }
 
   private static void sendEvent(String msg) {
