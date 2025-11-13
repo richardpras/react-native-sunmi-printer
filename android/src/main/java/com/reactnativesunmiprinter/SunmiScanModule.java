@@ -5,8 +5,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Bundle;
 import android.os.Build;
+import android.os.Bundle;
 import android.util.Log;
 
 import com.facebook.react.bridge.ActivityEventListener;
@@ -21,7 +21,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
+@SuppressWarnings("unused")
 public class SunmiScanModule extends ReactContextBaseJavaModule {
+
   private static ReactApplicationContext reactContext;
   private static final int START_SCAN = 0x0000;
   private static final String E_ACTIVITY_DOES_NOT_EXIST = "E_ACTIVITY_DOES_NOT_EXIST";
@@ -31,13 +33,11 @@ public class SunmiScanModule extends ReactContextBaseJavaModule {
   private static final String SOURCE = "source_byte";
   private Promise mPickerPromise;
 
-  private BroadcastReceiver receiver = new BroadcastReceiver() {
+  private final BroadcastReceiver receiver = new BroadcastReceiver() {
     @Override
     public void onReceive(Context context, Intent intent) {
-      String action = intent.getAction();
-      if (ACTION_DATA_CODE_RECEIVED.equals(action)) {
+      if (ACTION_DATA_CODE_RECEIVED.equals(intent.getAction())) {
         String code = intent.getStringExtra(DATA);
-        byte[] arr = intent.getByteArrayExtra(SOURCE);
         if (code != null && !code.isEmpty()) {
           sendEvent(code);
         }
@@ -51,11 +51,11 @@ public class SunmiScanModule extends ReactContextBaseJavaModule {
       if (intent != null) {
         Bundle bundle = intent.getExtras();
         ArrayList<HashMap<String, String>> result = (ArrayList<HashMap<String, String>>) bundle.getSerializable("data");
-        if (null != result) {
-          Iterator<HashMap<String, String>> it = result.iterator();
-          while (it.hasNext()) {
-            HashMap hashMap = it.next();
-            sendEvent(hashMap.get("VALUE").toString());
+        if (result != null) {
+          for (HashMap<String, String> hashMap : result) {
+            if (hashMap.containsKey("VALUE")) {
+              sendEvent(hashMap.get("VALUE"));
+            }
           }
         }
       }
@@ -88,23 +88,43 @@ public class SunmiScanModule extends ReactContextBaseJavaModule {
       intent.putExtra("PLAY_SOUND", true);
       currentActivity.startActivityForResult(intent, START_SCAN);
     } catch (Exception e) {
-      mPickerPromise.reject("E_FAILED_TO_SHOW_SCAN", e);
-      mPickerPromise = null;
+      if (mPickerPromise != null) {
+        mPickerPromise.reject(E_FAILED_TO_SHOW_SCAN, e);
+        mPickerPromise = null;
+      }
     }
   }
 
   private void registerReceiver() {
-    IntentFilter filter = new IntentFilter();
-    filter.addAction(ACTION_DATA_CODE_RECEIVED);
-    // Update for android 14
-    if (Build.VERSION.SDK_INT >= 34 && reactContext.getApplicationInfo().targetSdkVersion >= 34) {
-      reactContext.registerReceiver(receiver, filter, reactContext.RECEIVER_EXPORTED);
-    }else{
-      reactContext.registerReceiver(receiver, filter);
+    IntentFilter filter = new IntentFilter(ACTION_DATA_CODE_RECEIVED);
+    try {
+      if (Build.VERSION.SDK_INT >= 34 && reactContext.getApplicationInfo().targetSdkVersion >= 34) {
+        reactContext.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED);
+      } else {
+        reactContext.registerReceiver(receiver, filter);
+      }
+    } catch (Exception e) {
+      Log.e("SunmiScanModule", "Receiver registration failed: " + e.getMessage());
     }
   }
 
   private static void sendEvent(String msg) {
-    reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("onScanSuccess", msg);
+    if (reactContext == null) return;
+    try {
+      reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+        .emit("onScanSuccess", msg);
+    } catch (Exception e) {
+      Log.e("SunmiScanModule", "sendEvent failed: " + e.getMessage());
+    }
+  }
+
+  @Override
+  public void onCatalystInstanceDestroy() {
+    super.onCatalystInstanceDestroy();
+    try {
+      reactContext.unregisterReceiver(receiver);
+    } catch (Exception e) {
+      Log.w("SunmiScanModule", "Receiver already unregistered");
+    }
   }
 }

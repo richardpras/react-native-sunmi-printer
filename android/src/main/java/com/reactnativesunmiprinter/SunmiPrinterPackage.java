@@ -1,7 +1,6 @@
 package com.reactnativesunmiprinter;
 
 import androidx.annotation.NonNull;
-
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -11,13 +10,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+@SuppressWarnings("unused")
 public class SunmiPrinterPackage implements ReactPackage {
+
   @NonNull
   @Override
   public List<NativeModule> createNativeModules(@NonNull ReactApplicationContext reactContext) {
     List<NativeModule> modules = new ArrayList<>();
     modules.add(new SunmiPrinterModule(reactContext));
-    modules.add(new SunmiScanModule(reactContext));
+    modules.add(new SunmiScanModule(reactContext)); // Uncomment if class exists
     return modules;
   }
 

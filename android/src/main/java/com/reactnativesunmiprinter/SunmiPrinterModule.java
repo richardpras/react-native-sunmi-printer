@@ -27,6 +27,7 @@ import com.sunmi.peripheral.printer.WoyouConsts;
 
 import java.util.Map;
 
+@SuppressWarnings("unused")
 @ReactModule(name = SunmiPrinterModule.NAME)
 public class SunmiPrinterModule extends ReactContextBaseJavaModule {
 
@@ -41,10 +42,9 @@ public class SunmiPrinterModule extends ReactContextBaseJavaModule {
   private InnerResultCallback innerResultCallback = new InnerResultCallback() {
     @Override
     public void onRunResult(boolean isSuccess) throws RemoteException {
-      if (isSuccess) {
-        p.resolve(200);
-      } else {
-        p.reject("" + 0);
+      if (p != null) {
+        if (isSuccess) p.resolve(200);
+        else p.reject("0", "Print failed");
       }
     }
 
@@ -100,9 +100,18 @@ public class SunmiPrinterModule extends ReactContextBaseJavaModule {
    * @return
    */
   @ReactMethod
-  public void printerInit() throws RemoteException {
-    printerService.printerInit(innerResultCallback);
+  public void printerInit() {
+    if (printerService == null) {
+      Log.e(TAG, "Printer service not connected");
+      return;
+    }
+    try {
+      printerService.printerInit(innerResultCallback);
+    } catch (RemoteException e) {
+      Log.e(TAG, "printerInit error: " + e.getMessage());
+    }
   }
+
 
   /**
    * 打印自检

@@ -1,40 +1,44 @@
 package com.reactnativesunmiprinter;
 
-public class ESCUtil {
+/**
+ * Utility class for ESC/POS printer command bytes.
+ * Compatible with Android 6 (API 23) and above.
+ */
+public final class ESCUtil {
 
-  public static final byte ESC = 0x1B;  // 换码
-  public static final byte FS = 0x1C;   // 文本分隔符
-  public static final byte GS = 0x1D;   // 组分隔符
-  public static final byte DLE = 0x10;  // 数据连接换码
-  public static final byte EOT = 0x04;  // 传输结束
-  public static final byte ENQ = 0x05;  // 询问字符
-  public static final byte SP = 0x20;   // 空格
-  public static final byte HT = 0x09;   // 横向列表
-  public static final byte LF = 0x0A;   //打印并换行（水平定位）
-  public static final byte CR = 0x0D;   // 归位键
-  public static final byte FF = 0x0C;   // 走纸控制（打印并回到标准模式（在页模式下） ）
-  public static final byte CAN = 0x18;  // 作废（页模式下取消打印数据 ）
+     private ESCUtil() {
+        throw new UnsupportedOperationException("Utility class");
+    }
 
+    // Control characters
+    public static final byte ESC = 0x1B;  // Escape
+    public static final byte FS  = 0x1C;  // File Separator
+    public static final byte GS  = 0x1D;  // Group Separator
+    public static final byte DLE = 0x10;  // Data Link Escape
+    public static final byte EOT = 0x04;  // End Of Transmission
+    public static final byte ENQ = 0x05;  // Enquiry
+    public static final byte SP  = 0x20;  // Space
+    public static final byte HT  = 0x09;  // Horizontal Tab
+    public static final byte LF  = 0x0A;  // Line Feed
+    public static final byte CR  = 0x0D;  // Carriage Return
+    public static final byte FF  = 0x0C;  // Form Feed
+    public static final byte CAN = 0x18;  // Cancel
 
-  /**
-   * 字体加粗
-   */
-  public static byte[] boldOn() {
-    byte[] result = new byte[3];
-    result[0] = ESC;
-    result[1] = 69;
-    result[2] = 0xF;
-    return result;
-  }
+    /**
+     * Enable bold font.
+     *
+     * @return byte command to turn bold on
+     */
+    public static byte[] boldOn() {
+        return new byte[]{ESC, 0x45, 0x0F};
+    }
 
-  /**
-   * 取消字体加粗
-   */
-  public static byte[] boldOff() {
-    byte[] result = new byte[3];
-    result[0] = ESC;
-    result[1] = 69;
-    result[2] = 0;
-    return result;
-  }
+    /**
+     * Disable bold font.
+     *
+     * @return byte command to turn bold off
+     */
+    public static byte[] boldOff() {
+        return new byte[]{ESC, 0x45, 0x00};
+    }
 }

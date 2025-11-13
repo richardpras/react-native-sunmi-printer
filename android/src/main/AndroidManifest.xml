@@ -1,4 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.reactnativesunmiprinter">
-    <original-package android:name="woyou.aidlservice.jiuiv5"/>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Original package hanya untuk backward compatibility -->
+    <original-package android:name="woyou.aidlservice.jiuiv5" />
+
 </manifest>
